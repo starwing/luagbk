@@ -19,147 +19,147 @@
 
 
 static unsigned char utf8_count[UCHAR_MAX+1] = {
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-  4,4,4,4,4,4,4,4,
-  5,5,5,5,
-  6,6,6,6,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+    4,4,4,4,4,4,4,4,
+    5,5,5,5,
+    6,6,6,6,
 };
 
 static size_t utf8_encode(char *s, unsigned int ch) {
-  if (ch < 0x80) {
-    s[0] = (char)ch;
-    return 1;
-  }
-  if (ch <= 0x7FF) {
-    s[1] = (char) ((ch | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 6) | 0xC0);
-    return 2;
-  }
-  if (ch <= 0xFFFF) {
+    if (ch < 0x80) {
+        s[0] = (char)ch;
+        return 1;
+    }
+    if (ch <= 0x7FF) {
+        s[1] = (char) ((ch | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 6) | 0xC0);
+        return 2;
+    }
+    if (ch <= 0xFFFF) {
 three:
-    s[2] = (char) ((ch | 0x80) & 0xBF);
-    s[1] = (char) (((ch >> 6) | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 12) | 0xE0);
-    return 3;
-  }
-  if (ch <= 0x1FFFFF) {
-    s[3] = (char) ((ch | 0x80) & 0xBF);
-    s[2] = (char) (((ch >> 6) | 0x80) & 0xBF);
-    s[1] = (char) (((ch >> 12) | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 18) | 0xF0);
-    return 4;
-  }
-  if (ch <= 0x3FFFFFF) {
-    s[4] = (char) ((ch | 0x80) & 0xBF);
-    s[3] = (char) (((ch >> 6) | 0x80) & 0xBF);
-    s[2] = (char) (((ch >> 12) | 0x80) & 0xBF);
-    s[1] = (char) (((ch >> 18) | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 24) | 0xF8);
-    return 5;
-  }
-  if (ch <= 0x7FFFFFFF) {
-    s[5] = (char) ((ch | 0x80) & 0xBF);
-    s[4] = (char) (((ch >> 6) | 0x80) & 0xBF);
-    s[3] = (char) (((ch >> 12) | 0x80) & 0xBF);
-    s[2] = (char) (((ch >> 18) | 0x80) & 0xBF);
-    s[1] = (char) (((ch >> 24) | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 30) | 0xFC);
-    return 6;
-  }
+        s[2] = (char) ((ch | 0x80) & 0xBF);
+        s[1] = (char) (((ch >> 6) | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 12) | 0xE0);
+        return 3;
+    }
+    if (ch <= 0x1FFFFF) {
+        s[3] = (char) ((ch | 0x80) & 0xBF);
+        s[2] = (char) (((ch >> 6) | 0x80) & 0xBF);
+        s[1] = (char) (((ch >> 12) | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 18) | 0xF0);
+        return 4;
+    }
+    if (ch <= 0x3FFFFFF) {
+        s[4] = (char) ((ch | 0x80) & 0xBF);
+        s[3] = (char) (((ch >> 6) | 0x80) & 0xBF);
+        s[2] = (char) (((ch >> 12) | 0x80) & 0xBF);
+        s[1] = (char) (((ch >> 18) | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 24) | 0xF8);
+        return 5;
+    }
+    if (ch <= 0x7FFFFFFF) {
+        s[5] = (char) ((ch | 0x80) & 0xBF);
+        s[4] = (char) (((ch >> 6) | 0x80) & 0xBF);
+        s[3] = (char) (((ch >> 12) | 0x80) & 0xBF);
+        s[2] = (char) (((ch >> 18) | 0x80) & 0xBF);
+        s[1] = (char) (((ch >> 24) | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 30) | 0xFC);
+        return 6;
+    }
 
-  /* fallback */
-  ch = 0xFFFD;
-  goto three;
+    /* fallback */
+    ch = 0xFFFD;
+    goto three;
 }
 
 static size_t utf8_decode(const char *s, const char *e, unsigned int *pch) {
-  unsigned int ch;
+    unsigned int ch;
 
-  if (s >= e) {
-    *pch = 0;
-    return 0;   
-  }
+    if (s >= e) {
+        *pch = 0;
+        return 0;   
+    }
 
-  ch = (unsigned char)s[0];
-  if (ch < 0xC0) goto fallback;
-  if (ch < 0xE0) {
-    if (s+1 >= e || (s[1] & 0xC0) != 0x80)
-      goto fallback;
-    *pch = ((ch   & 0x1F) << 6) |
+    ch = (unsigned char)s[0];
+    if (ch < 0xC0) goto fallback;
+    if (ch < 0xE0) {
+        if (s+1 >= e || (s[1] & 0xC0) != 0x80)
+            goto fallback;
+        *pch = ((ch   & 0x1F) << 6) |
             (s[1] & 0x3F);
-    return 2;
-  }
-  if (ch < 0xF0) {
-    if (s+2 >= e || (s[1] & 0xC0) != 0x80
-                 || (s[2] & 0xC0) != 0x80)
-      goto fallback;
-    *pch = ((ch   & 0x0F) << 12) |
-           ((s[1] & 0x3F) <<  6) |
+        return 2;
+    }
+    if (ch < 0xF0) {
+        if (s+2 >= e || (s[1] & 0xC0) != 0x80
+                || (s[2] & 0xC0) != 0x80)
+            goto fallback;
+        *pch = ((ch   & 0x0F) << 12) |
+            ((s[1] & 0x3F) <<  6) |
             (s[2] & 0x3F);
-    return 3;
-  }
-  {
-    int total, trail;
-    total = utf8_count[ch];
-    trail = total - 1;
+        return 3;
+    }
+    {
+        int total, trail;
+        total = utf8_count[ch];
+        trail = total - 1;
 
-    if (total == 0 || s+total >= e)
-      goto fallback;
+        if (total == 0 || s+total >= e)
+            goto fallback;
 
-    ch &= 0x3F >> trail;
-    do {
-      ++s;
-      if ((*s & 0xC0) != 0x80)
-        goto fallback;
-      ch <<= 6;
-      ch |= (*s & 0x3F);
-      --trail;
-    } while (trail > 0);
-    *pch = ch;
-    return total;
-  }
+        ch &= 0x3F >> trail;
+        do {
+            ++s;
+            if ((*s & 0xC0) != 0x80)
+                goto fallback;
+            ch <<= 6;
+            ch |= (*s & 0x3F);
+            --trail;
+        } while (trail > 0);
+        *pch = ch;
+        return total;
+    }
 
 fallback:
-  *pch = ch;
-  return 1;
+    *pch = ch;
+    return 1;
 }
 
 static const char *utf8_next(const char *s, const char *e) {
-  unsigned int ch;
-  return s + utf8_decode(s, e, &ch);
+    unsigned int ch;
+    return s + utf8_decode(s, e, &ch);
 }
 
 static const char *utf8_prev(const char *s, const char *e) {
-  const char *look = e - 1;
+    const char *look = e - 1;
 
-  while (s <= look) {
-    unsigned int ch = (unsigned char)*look;
-    if (ch < 0x80 || ch >= 0xC0)
-      return look;
-    --look;
-  }
+    while (s <= look) {
+        unsigned int ch = (unsigned char)*look;
+        if (ch < 0x80 || ch >= 0xC0)
+            return look;
+        --look;
+    }
 
-  return s;
+    return s;
 }
 
 static const char *utf8_index(const char *s, const char *e, int idx) {
-  if (idx >= 0) {
-    while (s < e && idx-- > 0)
-      s = utf8_next(s, e);
-    return s;
-  }
-  else {
-    while (s < e && idx++ < 0)
-      e = utf8_prev(s, e);
-    return e;
-  }
+    if (idx >= 0) {
+        while (s < e && idx-- > 0)
+            s = utf8_next(s, e);
+        return s;
+    }
+    else {
+        while (s < e && idx++ < 0)
+            e = utf8_prev(s, e);
+        return e;
+    }
 }
 
 static void add_utf8char(luaL_Buffer *b, unsigned int ch) {
@@ -265,21 +265,21 @@ static const PinyinEntry *get_polyphone(unsigned int uni_code) {
 /* lua routines */
 
 static const char *check_utf8(lua_State *L, int idx, const char **end) {
-  size_t len;
-  const char *s = luaL_checklstring(L, idx, &len);
-  if (end) *end = s+len;
-  return s;
+    size_t len;
+    const char *s = luaL_checklstring(L, idx, &len);
+    if (end) *end = s+len;
+    return s;
 }
 
 static const char *posrelat(const char *s, const char *e, int idx) {
-  if (idx > 0) --idx;
-  return utf8_index(s, e, idx);
+    if (idx > 0) --idx;
+    return utf8_index(s, e, idx);
 }
 
 static const char *posrelat_end(const char *s, const char *e, int idx) {
-  if (idx == -1) return e;
-  if (idx < 0) ++idx;
-  return utf8_index(s, e, idx);
+    if (idx == -1) return e;
+    if (idx < 0) ++idx;
+    return utf8_index(s, e, idx);
 }
 
 static int Lpinyin(lua_State *L) {

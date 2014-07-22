@@ -11,17 +11,17 @@
 
 
 static unsigned char utf8_count[UCHAR_MAX+1] = {
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
-  4,4,4,4,4,4,4,4,
-  5,5,5,5,
-  6,6,6,6,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+    4,4,4,4,4,4,4,4,
+    5,5,5,5,
+    6,6,6,6,
 };
 
 static unsigned int convert_to_gbk(unsigned int uni_code) {
@@ -35,102 +35,102 @@ static unsigned int convert_from_gbk(unsigned int gbk_code) {
 }
 
 static size_t utf8_encode(char *s, unsigned int ch) {
-  if (ch < 0x80) {
-    s[0] = (char)ch;
-    return 1;
-  }
-  if (ch <= 0x7FF) {
-    s[1] = (char) ((ch | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 6) | 0xC0);
-    return 2;
-  }
-  if (ch <= 0xFFFF) {
+    if (ch < 0x80) {
+        s[0] = (char)ch;
+        return 1;
+    }
+    if (ch <= 0x7FF) {
+        s[1] = (char) ((ch | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 6) | 0xC0);
+        return 2;
+    }
+    if (ch <= 0xFFFF) {
 three:
-    s[2] = (char) ((ch | 0x80) & 0xBF);
-    s[1] = (char) (((ch >> 6) | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 12) | 0xE0);
-    return 3;
-  }
-  if (ch <= 0x1FFFFF) {
-    s[3] = (char) ((ch | 0x80) & 0xBF);
-    s[2] = (char) (((ch >> 6) | 0x80) & 0xBF);
-    s[1] = (char) (((ch >> 12) | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 18) | 0xF0);
-    return 4;
-  }
-  if (ch <= 0x3FFFFFF) {
-    s[4] = (char) ((ch | 0x80) & 0xBF);
-    s[3] = (char) (((ch >> 6) | 0x80) & 0xBF);
-    s[2] = (char) (((ch >> 12) | 0x80) & 0xBF);
-    s[1] = (char) (((ch >> 18) | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 24) | 0xF8);
-    return 5;
-  }
-  if (ch <= 0x7FFFFFFF) {
-    s[5] = (char) ((ch | 0x80) & 0xBF);
-    s[4] = (char) (((ch >> 6) | 0x80) & 0xBF);
-    s[3] = (char) (((ch >> 12) | 0x80) & 0xBF);
-    s[2] = (char) (((ch >> 18) | 0x80) & 0xBF);
-    s[1] = (char) (((ch >> 24) | 0x80) & 0xBF);
-    s[0] = (char) ((ch >> 30) | 0xFC);
-    return 6;
-  }
+        s[2] = (char) ((ch | 0x80) & 0xBF);
+        s[1] = (char) (((ch >> 6) | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 12) | 0xE0);
+        return 3;
+    }
+    if (ch <= 0x1FFFFF) {
+        s[3] = (char) ((ch | 0x80) & 0xBF);
+        s[2] = (char) (((ch >> 6) | 0x80) & 0xBF);
+        s[1] = (char) (((ch >> 12) | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 18) | 0xF0);
+        return 4;
+    }
+    if (ch <= 0x3FFFFFF) {
+        s[4] = (char) ((ch | 0x80) & 0xBF);
+        s[3] = (char) (((ch >> 6) | 0x80) & 0xBF);
+        s[2] = (char) (((ch >> 12) | 0x80) & 0xBF);
+        s[1] = (char) (((ch >> 18) | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 24) | 0xF8);
+        return 5;
+    }
+    if (ch <= 0x7FFFFFFF) {
+        s[5] = (char) ((ch | 0x80) & 0xBF);
+        s[4] = (char) (((ch >> 6) | 0x80) & 0xBF);
+        s[3] = (char) (((ch >> 12) | 0x80) & 0xBF);
+        s[2] = (char) (((ch >> 18) | 0x80) & 0xBF);
+        s[1] = (char) (((ch >> 24) | 0x80) & 0xBF);
+        s[0] = (char) ((ch >> 30) | 0xFC);
+        return 6;
+    }
 
-  /* fallback */
-  ch = 0xFFFD;
-  goto three;
+    /* fallback */
+    ch = 0xFFFD;
+    goto three;
 }
 
 static size_t utf8_decode(const char *s, const char *e, unsigned int *pch) {
-  unsigned int ch;
+    unsigned int ch;
 
-  if (s >= e) {
-    *pch = 0;
-    return 0;   
-  }
+    if (s >= e) {
+        *pch = 0;
+        return 0;   
+    }
 
-  ch = (unsigned char)s[0];
-  if (ch < 0xC0) goto fallback;
-  if (ch < 0xE0) {
-    if (s+1 >= e || (s[1] & 0xC0) != 0x80)
-      goto fallback;
-    *pch = ((ch   & 0x1F) << 6) |
+    ch = (unsigned char)s[0];
+    if (ch < 0xC0) goto fallback;
+    if (ch < 0xE0) {
+        if (s+1 >= e || (s[1] & 0xC0) != 0x80)
+            goto fallback;
+        *pch = ((ch   & 0x1F) << 6) |
             (s[1] & 0x3F);
-    return 2;
-  }
-  if (ch < 0xF0) {
-    if (s+2 >= e || (s[1] & 0xC0) != 0x80
-                 || (s[2] & 0xC0) != 0x80)
-      goto fallback;
-    *pch = ((ch   & 0x0F) << 12) |
-           ((s[1] & 0x3F) <<  6) |
+        return 2;
+    }
+    if (ch < 0xF0) {
+        if (s+2 >= e || (s[1] & 0xC0) != 0x80
+                || (s[2] & 0xC0) != 0x80)
+            goto fallback;
+        *pch = ((ch   & 0x0F) << 12) |
+            ((s[1] & 0x3F) <<  6) |
             (s[2] & 0x3F);
-    return 3;
-  }
-  {
-    int total, trail;
-    total = utf8_count[ch];
-    trail = total - 1;
+        return 3;
+    }
+    {
+        int total, trail;
+        total = utf8_count[ch];
+        trail = total - 1;
 
-    if (total == 0 || s+total >= e)
-      goto fallback;
+        if (total == 0 || s+total >= e)
+            goto fallback;
 
-    ch &= 0x3F >> trail;
-    do {
-      ++s;
-      if ((*s & 0xC0) != 0x80)
-        goto fallback;
-      ch <<= 6;
-      ch |= (*s & 0x3F);
-      --trail;
-    } while (trail > 0);
-    *pch = ch;
-    return total;
-  }
+        ch &= 0x3F >> trail;
+        do {
+            ++s;
+            if ((*s & 0xC0) != 0x80)
+                goto fallback;
+            ch <<= 6;
+            ch |= (*s & 0x3F);
+            --trail;
+        } while (trail > 0);
+        *pch = ch;
+        return total;
+    }
 
 fallback:
-  *pch = ch;
-  return 1;
+    *pch = ch;
+    return 1;
 }
 
 static void add_utf8char(luaL_Buffer *b, unsigned int ch) {
