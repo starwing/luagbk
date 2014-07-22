@@ -256,10 +256,10 @@ io.write [[
 
 
 typedef struct PinyinEntry {
-   char syllable;
-   char rhyme;
-   char tone;
-   char polyphone_count;
+   unsigned char syllable;
+   unsigned char rhyme;
+   unsigned char tone;
+   unsigned char polyphone_count;
 } PinyinEntry;
 
 typedef struct PinyinPolyphone {
@@ -357,41 +357,3 @@ io.write [[
 #endif /* pinyin_h */
 ]]
 
-do return end
-
-local counts = {}
-for _,entry in pairs(uni_pinyin) do
-   if not counts[#entry] then
-      counts[#entry] = 1
-   else
-      counts[#entry] = counts[#entry]+1
-   end
-end
-for i = 1, 12 do
-   if counts[i] then
-      print(i, counts[i])
-   end
-end
-
-local pymap = {}
-for _,entry in pairs(uni_pinyin) do
-   for _,v in ipairs(entry) do
-      pymap[v] = true
-   end
-end
-
-local sorted_py = {}
-local normmap = {}
-for k in pairs(pymap) do
-   sorted_py[#sorted_py+1] = k
-   local npy, num = normalize_pinyin(k)
-   normmap[k] = npy..(num == 0 and '' or num)
-end
-table.sort(sorted_py, function(a,b)
-   return normmap[a] < normmap[b]
-end)
-io.output "pymap.txt"
-for _, v in ipairs(sorted_py) do
-   local f,s,n = get_pinyin_triple(v)
-   io.write(v, ("(%s %d,%d,%d)"):format(normmap[v], f,s,n), "\n")
-end

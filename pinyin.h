@@ -16,10 +16,10 @@ static const char *py_rhymes[64] = {
 
 
 typedef struct PinyinEntry {
-   char syllable;
-   char rhyme;
-   char tone;
-   char polyphone_count;
+   unsigned char syllable;
+   unsigned char rhyme;
+   unsigned char tone;
+   unsigned char polyphone_count;
 } PinyinEntry;
 
 typedef struct PinyinPolyphone {
