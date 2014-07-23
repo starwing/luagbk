@@ -1,6 +1,7 @@
 local py = require 'pinyin'
 local gbk = require 'gbk'
 
+io.write(gbk.fromutf8(py.index "hao2"), "\n")
 print(gbk.fromutf8(py.pinyin("小墨是笨蛋啊翔", "u")))
 
 print(py.pinyin "小墨是笨蛋啊" .."$")

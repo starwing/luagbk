@@ -114,20 +114,21 @@ end
 
 local sylmap, rhymap, get_pinyin_triple do
 
-local rs = "a|ai|ao|an|ang|e|ei|en|eng|r|er|o|ou|m|n|ng"
+local rs = "a ai an ang ao e ei en eng er m n ng o ou r"
 local syllable = [[
-b|c|ch|d|f|g|h|j|k|l|m|n|
-p|q|r|s|sh|t|w|x|y|z|zh
+b c ch d f g h j k l m n
+p q r s sh t w x y z zh
 ]] -- 23+""
 local rhyme = [[
-a|au|ai|ao|an|ang|
-i|ia|iao|ian|iang|iu|ie|iong|in|ing|
-u|ua|uai|uan|uang|ue|ui|uo|un|
-e|ei|en|eng|er|r|
-o|ou|ong|
-v|ve|
-m|
-n|ng
+a ai an ang ao au
+e ei en eng er
+i ia ian iang iao ie in ing iong iu
+m
+n ng
+o ong ou
+r
+u ua uai uan uang ue ui un uo
+v ve
 ]] -- 38
 
 sylmap = {}
@@ -218,13 +219,13 @@ local function write_tables(prefix, codes, format, t)
    io.write "};\n\n\n"
 end
 
-local function write_strings(t, width, indent)
+local function write_strings(t, format, width, indent)
    width = width or 78
    indent = indent or 2
    io.write((" "):rep(indent))
    local linewidth = indent
-   for _, str in ipairs(t) do
-      local written = ("%q, "):format(str):gsub("\n", "\\n")
+   for _, v in ipairs(t) do
+      local written = (format and format(v) or v) .. ", "
       if linewidth + #written > width then
          io.write("\n", (" "):rep(indent))
          linewidth = indent
@@ -235,26 +236,107 @@ local function write_strings(t, width, indent)
    io.write("\n")
 end
 
+local function merge_data(t, data)
+   local idx
+   for i = 1, #t do
+      if t[i] ~= data[1] then
+         goto next
+      end
+      for ii, v in ipairs(data) do
+         if t[i+ii-1] ~= v then
+            goto next
+         end
+      end
+      idx = i
+      break
+      ::next::
+   end
+   if not idx then
+      idx = #t+1
+      for i, v in ipairs(data) do
+         t[idx+i-1] = v
+      end
+   end
+   return idx
+end
 
-io.write [[
+local polyphone, polyphone_data do
+
+local sorted = {}
+for cp, entry in pairs(uni_pinyin) do
+   if cp < 0x10000 and #entry > 1 then
+      sorted[#sorted+1] = cp
+   end
+end
+table.sort(sorted)
+
+polyphone = {}
+polyphone_data = {}
+for _, cp in ipairs(sorted) do
+   local entry = uni_pinyin[cp]
+   local data = {}
+   for i = 2, #entry do
+      local s,r,t = get_pinyin_triple(entry[i])
+      data[#data+1] = (s-1)*2^16+(r-1)*2^8+t
+   end
+   polyphone[#polyphone+1] = {
+      cp = cp,
+      idx = merge_data(polyphone_data, data)-1,
+   }
+end
+
+end
+
+local pyindex, pyindex_data do
+
+pyindex = {}
+pyindex_data = { 0 }
+
+local pymap = {}
+for cp, entry in pairs(uni_pinyin) do
+   if cp > 0x10000 then goto next end
+   for _, py in ipairs(entry) do
+      local s,r,t = get_pinyin_triple(py)
+      local idx = (s-1)*2^16+(r-1)*2^8+t
+      local entry = pymap[idx]
+      if not entry then
+         entry = {}
+         pymap[idx] = entry
+      end
+      entry[#entry+1] = cp
+   end
+   ::next::
+end
+for py, entry in pairs(pymap) do
+   table.sort(entry)
+   pyindex[#pyindex+1] = py
+end
+table.sort(pyindex)
+for i, py in ipairs(pyindex) do
+   local entry = pymap[py]
+   pyindex[i] = {
+      entry = py,
+      count = #entry,
+      idx = merge_data(pyindex_data, entry)-1
+   }
+end
+
+end
+
+
+io.write([[
 #ifndef pinyin_h
 #define pinyin_h
 
 
-static const char *py_syllables[64] = {
-]]
-write_strings(sylmap, 78)
+#define SYLLABLE_COUNT  ]]..#sylmap..[[
 
-io.write [[
-};
+#define RHYME_COUNT     ]]..#rhymap..[[
 
-static const char *py_rhymes[64] = {
-]]
-write_strings(rhymap, 78)
+#define POLYPHONE_COUNT ]]..#polyphone..[[
 
+#define PYINDEX_COUNT   ]]..#pyindex..[[
 
-io.write [[
-};
 
 
 typedef struct PinyinEntry {
@@ -269,8 +351,30 @@ typedef struct PinyinPolyphone {
    unsigned short idx;
 } PinyinPolyphone;
 
+typedef struct PinyinIndex {
+   PinyinEntry entry;
+   unsigned short idx;
+   unsigned short count;
+} PinyinIndex;
 
+
+static const char *py_syllables[SYLLABLE_COUNT] = {
+]])
+write_strings(sylmap, function(s)
+   return ("%q"):format(s):gsub("\n", "\\n")
+end)
+
+io.write [[
+};
+
+static const char *py_rhymes[RHYME_COUNT] = {
 ]]
+write_strings(rhymap, function(s)
+   return ("%q"):format(s):gsub("\n", "\\n")
+end)
+
+
+io.write "};\n\n\n"
 
 local codes = {}
 for cp in pairs(uni_pinyin) do
@@ -286,60 +390,15 @@ write_tables("pytable", codes, function(cp)
 end, "PinyinEntry")
 
 
-local polyphone = {}
-for cp, entry in pairs(uni_pinyin) do
-   if cp < 0x10000 and #entry > 1 then
-      polyphone[#polyphone+1] = cp
-   end
-end
-table.sort(polyphone)
-
-local polyphone_idx = {}
-local polyphone_data = {}
-for _, cp in ipairs(polyphone) do
-   local entry = uni_pinyin[cp]
-   local idx
-   local data = {}
-   for i = 2, #entry do
-      local s,r,t = get_pinyin_triple(entry[i])
-      data[#data+1] = (s-1)*2^16+(r-1)*2^8+t
-   end
-   for i = 1, #polyphone_data do
-      if polyphone_data[i] ~= data[1] then
-         goto next
-      end
-      for ii, v in ipairs(data) do
-         if polyphone_data[i+ii-1] ~= v then
-            goto next
-         end
-      end
-      idx = i
-      break
-      ::next::
-   end
-   if not idx then
-      idx = #polyphone_data+1
-      for i, v in ipairs(data) do
-         polyphone_data[idx+i-1] = v
-      end
-   end
-   polyphone_idx[#polyphone_idx+1] = {
-      cp = cp,
-      idx = idx-1,
-   }
-end
-
 io.write([[
-#define POLYPHONE_COUNT ]]..#polyphone_idx..[[
-
-
-static const PinyinPolyphone polyphone[] = {
+static const PinyinPolyphone polyphone[POLYPHONE_COUNT] = {
 ]])
-for i, v in ipairs(polyphone_idx) do
+for i, v in ipairs(polyphone) do
    write_entry(i-1, ("{0x%04X,%d}"):format(v.cp, v.idx))
 end
 
 io.write [[
+
 };
 
 static const PinyinEntry polyphone_data[] = {
@@ -353,6 +412,31 @@ for i, v in ipairs(polyphone_data) do
 end
 
 io.write [[
+
+};
+
+
+static const PinyinIndex pyindex[PYINDEX_COUNT] = {
+]]
+for i, v in ipairs(pyindex) do
+   write_entry(i-1, ("{ {%2d,%2d,%d}, %d, %d }"):format(
+      math.floor(v.entry/2^16),
+      math.floor(v.entry/2^8)%2^8,
+      v.entry%2^8,
+      v.idx, v.count), 2)
+end
+io.write [[
+
+};
+
+static const unsigned short pyindex_data[] = {
+]]
+for i, cp in ipairs(pyindex_data) do
+   write_entry(i-1, ("0x%04X"):format(cp))
+end
+
+io.write [[
+
 };
 
 

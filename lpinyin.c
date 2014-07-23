@@ -8,14 +8,13 @@
 #include <string.h>
 
 
+#define UTF_MAX     8
+
 /* add_pinyin flags */
 #define WITH_UTF8      0x01
 #define WITH_TONE      0x02
 #define WITH_PREFIX    0x04
 #define WITH_POSTFIX   0x08
-
-#define UTF_MAX     8
-#define PINYIN_MAX 16
 
 
 static unsigned char utf8_count[UCHAR_MAX+1] = {
@@ -249,14 +248,136 @@ static const PinyinEntry *get_polyphone(unsigned int uni_code) {
     size_t b = 0, t = POLYPHONE_COUNT;
     while (b < t) {
         size_t mid = (b + t)>>1;
-        const PinyinPolyphone *res = &polyphone[mid];
-        /*printf("%X: %X (%d, %d)\n", uni_code, (unsigned)res->cp, b, t);*/
-        if (uni_code > res->cp)
+        const PinyinPolyphone *cur = &polyphone[mid];
+        /*printf("%X: %X (%d, %d)\n", uni_code, (unsigned)cur->cp, b, t);*/
+        if (uni_code > cur->cp)
             b = mid+1;
-        else if (uni_code < res->cp)
+        else if (uni_code < cur->cp)
             t = mid;
         else
-            return &polyphone_data[res->idx];
+            return &polyphone_data[cur->idx];
+    }
+    return NULL;
+}
+
+
+/* parse pinyin */
+
+static int starts_with(const char *s, const char *prefix, const char **ends) {
+    int res;
+    while (*prefix != '\0' && *s == *prefix)
+        ++s, ++prefix;
+    res = *prefix == '\0' ? 0 : *s - *prefix;
+    if (ends)
+        *ends = s;
+    return res;
+}
+
+static const char *skip_whitespace(const char *s) {
+    while (*s == '\t' || *s == '\n' || *s == '\r'
+            || *s == ' ' || *s == '\'')
+        ++s;
+    return s;
+}
+
+static const char *pinyin_syllable(const char *pinyin, PinyinEntry *e) {
+    int may_h = 0;
+    switch (*pinyin) {
+    case 'b': e->syllable = 1;  break;
+    case 'c': e->syllable = 2; may_h = 1;  break;
+    case 'd': e->syllable = 4;  break;
+    case 'f': e->syllable = 5;  break;
+    case 'g': e->syllable = 6;  break;
+    case 'h': e->syllable = 7;  break;
+    case 'j': e->syllable = 8;  break;
+    case 'k': e->syllable = 9;  break;
+    case 'l': e->syllable = 10; break;
+    case 'm': e->syllable = 11; break;
+    case 'n': e->syllable = 12; break;
+    case 'p': e->syllable = 13; break;
+    case 'q': e->syllable = 14; break;
+    case 'r': e->syllable = 15; break;
+    case 's': e->syllable = 16; may_h = 1; break;
+    case 't': e->syllable = 18; break;
+    case 'w': e->syllable = 19; break;
+    case 'x': e->syllable = 20; break;
+    case 'y': e->syllable = 21; break;
+    case 'z': e->syllable = 22; may_h = 1; break;
+    default:  e->syllable = 0;  return pinyin;
+    }
+    ++pinyin;
+    if (may_h && *pinyin == 'h')
+        ++e->syllable, ++pinyin;
+    return pinyin;
+}
+
+static const char *pinyin_rhyme(const char *pinyin, PinyinEntry *e) {
+    const char *ends;
+    int res, mid, b = 0, t = RHYME_COUNT;
+    while (b < t) {
+        mid = (b + t - 1) >> 1;
+        res = starts_with(pinyin, py_rhymes[mid], &ends);
+        printf("%d:%d:%d: %s - %s\n", b, mid, t, pinyin, py_rhymes[mid]);
+        if (b == mid)
+            break;
+        if (res >= 0)
+            b = mid;
+        else
+            t = mid;
+    }
+    if (res == 0) {
+        e->rhyme = mid;
+        return ends;
+    }
+    return pinyin;
+}
+
+static const char *pinyin_tone(const char *pinyin, PinyinEntry *e) {
+    if (*pinyin >= '1' && *pinyin <= '4') {
+        e->tone = *pinyin - '0';
+        return pinyin+1;
+    }
+    return pinyin;
+}
+
+static const char *parse_pinyin(const char *pinyin, PinyinEntry *e) {
+    const char *syl, *rhy, *tone;
+    syl = skip_whitespace(pinyin);
+    e->syllable = 0;
+    e->rhyme = 0;
+    e->tone = 0;
+    switch (*pinyin) {
+    case 'a':
+    case 'e':
+    case 'o':
+no_syllable:
+        tone = pinyin_rhyme(syl, e);
+        return pinyin_tone(tone, e);
+    }
+    if ((rhy = pinyin_syllable(syl, e)) == syl)
+        return pinyin;
+    if ((tone = pinyin_rhyme(rhy, e)) == rhy) {
+        if (*syl == 'm' || *syl == 'n' || *syl == 'r')
+            goto no_syllable;
+        return pinyin;
+    }
+    return pinyin_tone(tone, e);
+}
+
+static const PinyinIndex *get_pyindex(PinyinEntry entry) {
+    size_t b = 0, t = PYINDEX_COUNT;
+    unsigned key = (entry.syllable<<16)|(entry.rhyme<<8)|(entry.tone);
+    while (b < t) {
+        size_t mid = (b + t-1)>>1;
+        const PinyinIndex *cur = &pyindex[mid];
+        unsigned curkey = (cur->entry.syllable<<16)|(cur->entry.rhyme<<8)|(cur->entry.tone);
+        printf("%d:%d:%d: (%08X) - %08X\n", b, mid, t, curkey, key);
+        if (key > curkey)
+            b = mid+1;
+        else if (key < curkey)
+            t = mid;
+        else
+            return cur;
     }
     return NULL;
 }
@@ -280,6 +401,14 @@ static const char *posrelat_end(const char *s, const char *e, int idx) {
     if (idx == -1) return e;
     if (idx < 0) ++idx;
     return utf8_index(s, e, idx);
+}
+
+static int posrelat_raw(int idx, size_t len) {
+    if (idx > 0) --idx;
+    else if (idx < 0) idx += len;
+    if (idx < 0) idx = 0;
+    else if (idx >= len) idx = len;
+    return idx;
 }
 
 static int Lpinyin(lua_State *L) {
@@ -391,12 +520,39 @@ static int Lpolyphone(lua_State *L) {
     return get_info(L, &entry[idx-2], opt);
 }
 
+static int Lindex(lua_State *L) {
+    luaL_Buffer b;
+    const PinyinIndex *pyidx;
+    const char *stop, *s = luaL_checkstring(L, 1);
+    PinyinEntry entry;
+    int start, end;
+    if ((stop = parse_pinyin(s, &entry)) == s)
+        return 0;
+    if ((pyidx = get_pyindex(entry)) == NULL)
+        return 0;
+    start = posrelat_raw(luaL_optint(L, 2, 1), pyidx->count);
+    end = posrelat_raw(luaL_optint(L, 3, -1), pyidx->count);
+    if (start > end) return 0;
+    luaL_buffinit(L, &b);
+    while (start <= end) {
+        add_utf8char(&b, pyindex_data[pyidx->idx + start]);
+        ++start;
+    }
+    luaL_pushresult(&b);
+    if (*stop != '\0') {
+        lua_pushstring(L, stop);
+        return 2;
+    }
+    return 1;
+}
+
 LUALIB_API int luaopen_pinyin(lua_State *L) {
     luaL_Reg libs[] = {
 #define ENTRY(name) { #name, L##name }
         ENTRY(pinyin),
         ENTRY(info),
         ENTRY(polyphone),
+        ENTRY(index),
 #undef  ENTRY
         { NULL, NULL }
     };
