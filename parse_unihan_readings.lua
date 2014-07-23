@@ -114,8 +114,11 @@ end
 
 local sylmap, rhymap, get_pinyin_triple do
 
-local syllable = "b|c|ch|d|f|g|h|j|k|l|m|n|p|q|r|s|sh|t|w|x|y|z|zh" -- 24
 local rs = "a|ai|ao|an|ang|e|ei|en|eng|r|er|o|ou|m|n|ng"
+local syllable = [[
+b|c|ch|d|f|g|h|j|k|l|m|n|
+p|q|r|s|sh|t|w|x|y|z|zh
+]] -- 23+""
 local rhyme = [[
 a|au|ai|ao|an|ang|
 i|ia|iao|ian|iang|iu|ie|iong|in|ing|
@@ -218,19 +221,18 @@ end
 local function write_strings(t, width, indent)
    width = width or 78
    indent = indent or 2
-   local s = { (" "):rep(indent) }
+   io.write((" "):rep(indent))
    local linewidth = indent
    for _, str in ipairs(t) do
       local written = ("%q, "):format(str):gsub("\n", "\\n")
       if linewidth + #written > width then
-         s[#s+1] = "\n"..(" "):rep(indent)
+         io.write("\n", (" "):rep(indent))
          linewidth = indent
       end
       linewidth = linewidth + #written
-      s[#s+1] = written
+      io.write(written)
    end
-   s[#s+1] = "\n"
-   io.write(table.concat(s))
+   io.write("\n")
 end
 
 

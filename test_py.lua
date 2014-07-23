@@ -1,0 +1,31 @@
+local py = require 'pinyin'
+local gbk = require 'gbk'
+
+print(gbk.fromutf8(py.pinyin("小墨是笨蛋啊翔", "u")))
+
+print(py.pinyin "小墨是笨蛋啊" .."$")
+print(py.pinyin("123小墨是笨蛋123", "t"))
+print(py.pinyin "123小墨是123笨蛋123")
+
+print(py.info "还")
+print(py.info("还", "s"))
+print(py.info("还", "r"))
+print(py.info("还", "t"))
+print(py.info("还", "p"))
+print(gbk.fromutf8(py.info("还", "u")))
+print(py.polyphone"还")
+print(py.polyphone("还", 1))
+print(py.polyphone("还", 1, "s"))
+print(py.polyphone("还", 1, "r"))
+print(py.polyphone("还", 1, "t"))
+print(gbk.fromutf8(py.polyphone("还", 1, "u")))
+print(py.polyphone("还", 2))
+print(py.polyphone("还", 2, "s"))
+print(py.polyphone("还", 2, "r"))
+print(py.polyphone("还", 2, "t"))
+print(gbk.fromutf8(py.polyphone("还", 2, "u")))
+print(py.polyphone("还", 3))
+print(py.polyphone("还", 3, "s"))
+print(py.polyphone("还", 3, "r"))
+print(py.polyphone("还", 3, "t"))
+print(gbk.fromutf8(py.polyphone("还", 3, "u")))
