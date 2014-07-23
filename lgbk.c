@@ -26,7 +26,7 @@ static unsigned char utf8_count[UCHAR_MAX+1] = {
 
 static unsigned int convert_to_gbk(unsigned int uni_code) {
     const unsigned short *page = from_uni[(uni_code >> 8) & 0xFF];
-    return page == NULL ? 0xFFFE : page[uni_code & 0xFF];
+    return page == NULL ? 0x3F : page[uni_code & 0xFF];
 }
 
 static unsigned int convert_from_gbk(unsigned int gbk_code) {
