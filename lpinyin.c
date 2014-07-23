@@ -346,11 +346,10 @@ static int get_info(lua_State *L, const PinyinEntry *entry, const char *opt) {
         return 1;
     case 'u':
         luaL_buffinit(L, &b);
-        if (strcmp(opt, "utf8tone") == 0)
-            add_utf8_rhyme(&b, py_rhymes[(size_t)entry->rhyme], entry->tone);
-        else
+        if (opt[1] != 'r' && opt[1] != 't')
             add_pinyin(&b, entry, WITH_UTF8);
-        luaL_pushresult(&b);
+        else if (opt[1] == 'r' || strcmp(opt, "utf8rhyme") == 0)
+            add_utf8_rhyme(&b, py_rhymes[(size_t)entry->rhyme], entry->tone);
         return 1;
     }
     return luaL_argerror(L, 2, "invalid option");
