@@ -390,12 +390,12 @@ static int u_posrange(const char **ps, const char **pe,
   return *ps < *pe;
 }
 
-static int posrelat_raw(int idx, size_t len) {
+static int posrelat_raw(lua_Integer idx, size_t len) {
     if (idx > 0) --idx;
     else if (idx < 0) idx += len;
     if (idx < 0) idx = 0;
     else if (idx >= len) idx = len;
-    return idx;
+    return (int)idx;
 }
 
 static int Lpinyin(lua_State *L) {
@@ -495,7 +495,7 @@ static int Lpolyphone(lua_State *L) {
         return 0;
     }
     entry = get_entry(ch = get_codepoint(L, 1, 4));
-    idx = luaL_checkint(L, 2);
+    idx = (int)luaL_checkinteger(L, 2);
     if (idx <= 0 || idx > entry->polyphone_count)
         return 0;
     opt = luaL_optstring(L, 3, NULL);
@@ -519,8 +519,8 @@ static int Lindex(lua_State *L) {
         return 0;
     if ((pyidx = get_pyindex(entry)) == NULL)
         return 0;
-    start = posrelat_raw(luaL_optint(L, 2, 1), pyidx->count);
-    end = posrelat_raw(luaL_optint(L, 3, -1), pyidx->count);
+    start = posrelat_raw(luaL_optinteger(L, 2, 1), pyidx->count);
+    end = posrelat_raw(luaL_optinteger(L, 3, -1), pyidx->count);
     if (start > end) return 0;
     luaL_buffinit(L, &b);
     while (start <= end) {
@@ -548,6 +548,6 @@ LUALIB_API int luaopen_pinyin(lua_State *L) {
     luaL_newlib(L, libs);
     return 1;
 }
-/* cc: flags+='-shared -s -O3 -DLUA_BUILD_AS_DLL' libs+='-llua52'
+/* cc: flags+='-shared -s -O3 -DLUA_BUILD_AS_DLL' libs+='-llua53'
  * cc: output='pinyin.dll' run='lua test_py.lua'
  */
