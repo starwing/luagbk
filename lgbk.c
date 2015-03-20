@@ -207,8 +207,8 @@ static int Lgbk_len(lua_State *L) {
 static int Lgbk_byte(lua_State *L) {
     const char *e, *s = check_gbk(L, 1, &e);
     size_t len = gbk_length(s, e);
-    int posi = posrelat(luaL_optint(L, 2, 1), len);
-    int pose = posrelat(luaL_optint(L, 3, posi), len);
+    int posi = posrelat((int)luaL_optinteger(L, 2, 1), len);
+    int pose = posrelat((int)luaL_optinteger(L, 3, posi), len);
     const char *start = s;
     int i, n;
     if (posi < 1) posi = 1;
@@ -235,7 +235,7 @@ static int Lgbk_char(lua_State *L) {
     int i, top = lua_gettop(L);
     luaL_buffinit(L, &b);
     for (i = 1; i <= top; ++i)
-        add_gbkchar(&b, luaL_checkunsigned(L, i));
+        add_gbkchar(&b, (unsigned)luaL_checkinteger(L, i));
     luaL_pushresult(&b);
     return 1;
 }
@@ -248,8 +248,8 @@ static int Lgbk_fromutf8(lua_State *L) {
     case LUA_TNUMBER:
         top = lua_gettop(L);
         for (i = 1; i <= top; ++i) {
-            unsigned int code = luaL_checkunsigned(L, i);
-            lua_pushunsigned(L, convert_to_gbk(code));
+            unsigned int code = (unsigned)luaL_checkinteger(L, i);
+            lua_pushinteger(L, (lua_Integer)convert_to_gbk(code));
             lua_replace(L, i);
         }
         return top;
@@ -266,7 +266,7 @@ static int Lgbk_toutf8(lua_State *L) {
     case LUA_TNUMBER:
         top = lua_gettop(L);
         for (i = 1; i <= top; ++i) {
-            unsigned int code = luaL_checkint(L, i);
+            unsigned int code = (unsigned)luaL_checkinteger(L, i);
             lua_pushinteger(L, convert_from_gbk(code));
             lua_replace(L, i);
         }
@@ -292,4 +292,4 @@ LUALIB_API int luaopen_gbk(lua_State *L) {
     return 1;
 }
 /* cc: flags+='-s -mdll -O2 -DLUA_BUILD_AS_DLL'
- * cc: libs+='-llua52.dll' output='gbk.dll' run='lua.exe test.lua' */
+ * cc: libs+='-llua53.dll' output='gbk.dll' run='lua.exe test.lua' */
