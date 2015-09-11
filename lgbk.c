@@ -288,7 +288,12 @@ LUALIB_API int luaopen_gbk(lua_State *L) {
 #undef  ENTRY
         { NULL, NULL }
     };
+#if LUA_VERSION_NUM >= 502
     luaL_newlib(L, libs);
+#else
+    lua_newtable(L);
+    luaL_register(L, NULL, libs);
+#endif
     return 1;
 }
 /* cc: flags+='-s -mdll -O2 -DLUA_BUILD_AS_DLL'
