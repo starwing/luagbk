@@ -2,9 +2,13 @@
 #define ldbcs_h
 
 
+#include <lua.h>
+#include <lauxlib.h>
+
+#include <stddef.h>
+
 #define UTF_MAX     8
 #define DBCS_MAX    2
-
 
 static unsigned from_utf8(unsigned uni_code) {
     const unsigned short *page = from_uni[(uni_code >> 8) & 0xFF];
@@ -122,7 +126,7 @@ static size_t dbcs_decode(const char *s, const char *e, unsigned *pch) {
     }
 
     ch = s[0] & 0xFF;
-    if (ch < 0x7F) {
+    if (to_uni_00[ch] != UNI_DEFAULT_CODE) {
         *pch = ch;
         return 1;
     }
@@ -206,7 +210,7 @@ static int Ldbcs_byte(lua_State *L) {
     const char *start = s;
     int i, n;
     if (posi < 1) posi = 1;
-    if (pose > len) pose = len;
+    if (pose > (int)len) pose = len;
     if (pose > pose) return 0;
     n = (int)(pose - posi + 1);
     if (posi + n <= pose) /* (size_t -> int) overflow? */

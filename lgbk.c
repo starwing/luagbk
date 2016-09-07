@@ -1,9 +1,6 @@
 #include "gbk.h"
 
 #define LUA_LIB
-#include <lua.h>
-#include <lauxlib.h>
-
 #include "ldbcs.h"
 
 LUALIB_API int luaopen_gbk(lua_State *L) {

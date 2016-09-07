@@ -1,9 +1,6 @@
 #include "jis.h"
 
 #define LUA_LIB
-#include <lua.h>
-#include <lauxlib.h>
-
 #include "ldbcs.h"
 
 LUALIB_API int luaopen_jis(lua_State *L) {
@@ -27,5 +24,5 @@ LUALIB_API int luaopen_jis(lua_State *L) {
 }
 
 /* cc: flags+='-s -mdll -O2 -DLUA_BUILD_AS_DLL'
- * cc: libs+='-llua53.dll' output='gbk.dll' run='lua.exe test.lua' */
+ * cc: libs+='-llua53.dll' output='jis.dll' run='lua.exe test.lua' */
 
