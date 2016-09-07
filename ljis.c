@@ -1,4 +1,4 @@
-#include "gbk.h"
+#include "jis.h"
 
 #define LUA_LIB
 #include <lua.h>
@@ -6,7 +6,7 @@
 
 #include "ldbcs.h"
 
-LUALIB_API int luaopen_gbk(lua_State *L) {
+LUALIB_API int luaopen_jis(lua_State *L) {
     luaL_Reg libs[] = {
 #define ENTRY(name) { #name, Ldbcs_##name }
         ENTRY(len),

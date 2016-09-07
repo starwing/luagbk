@@ -1,7 +1,9 @@
 -- download bestfit936.txt from:
 -- http://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WindowsBestFit/bestfit936.txt
-io.input "bestfit936.txt"
-io.output "gbk.h"
+local CP   = arg[1] or "936"
+local NAME = arg[2] or "gbk"
+io.input("bestfit"..CP..".txt")
+io.output(NAME..".h")
 
 local info = {}
 local cp_codes = {}
@@ -82,12 +84,12 @@ for line in io.lines() do
       break
    end
 
-   local dbcs, def_gbk, def_uni =
+   local dbcs, def_cp, def_uni =
       line:match "CPINFO%s+(%d+)%s+0x(%x+)%s+0x(%x+)"
    if dbcs then
-      info.dbcs, info.def_gbk, info.def_uni =
+      info.dbcs, info.def_cp, info.def_uni =
          tonumber(dbcs),
-         tonumber(def_gbk, 16),
+         tonumber(def_cp, 16),
          tonumber(def_uni, 16)
       goto next
    end
@@ -199,19 +201,19 @@ local function write_tables(prefix, codes, maps)
 end
 
 io.write(([[
-#ifndef gbk_h
-#define gbk_h
+#ifndef ]]..NAME..[[_h
+#define ]]..NAME..[[_h
 
 #include <stddef.h>
 
-#define GBK_DEFAULT_CP_CODE  %#x
-#define GBK_DEFAULT_UNI_CODE %#x
+#define DBCS_DEFAULT_CODE     %#x
+#define UNI_DEFAULT_CODE      %#x
 
-]]):format(info.def_gbk, info.def_uni))
+]]):format(info.def_cp, info.def_uni))
 
 write_tables("to_uni", cp_codes, from_cp)
 write_tables("from_uni", uni_codes, to_cp)
 
 
 
-io.write "#endif /* gbk_h */\n"
+io.write("#endif /* "..NAME.."_h */\n")

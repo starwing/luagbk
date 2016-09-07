@@ -1,2 +1,7 @@
 bestfit*.txt
 Unihan_Readings.txt
+*.o
+*.exp
+*.idb
+*.pdb
+*.rock

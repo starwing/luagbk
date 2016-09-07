@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
-#define GBK_DEFAULT_CP_CODE  0x3f
-#define GBK_DEFAULT_UNI_CODE 0x3f
+#define DBCS_DEFAULT_CODE     0x3f
+#define UNI_DEFAULT_CODE      0x3f
 
 static const unsigned short to_uni_00[256] = {
   0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 
