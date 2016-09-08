@@ -1,7 +1,8 @@
 -- download bestfit936.txt from:
 -- http://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WindowsBestFit/bestfit936.txt
-local CP   = arg[1] or "936"
-local NAME = arg[2] or "gbk"
+local CP      = arg[1] or "936"
+local NAME    = arg[2] or "gbk"
+local INVALID = tonumber(arg[3] or 0xFFFE)
 io.input("bestfit"..CP..".txt")
 io.output(NAME..".h")
 
@@ -157,7 +158,8 @@ local function output_code(idx, cp)
    if idx % 8 == 7 then io.write "\n" end
 end
 
-local function write_tables(prefix, codes, maps)
+local function write_tables(prefix, codes, maps, def)
+   def = def or INVALID
    table.sort(codes)
    local leaders = {}
    local leader
@@ -167,7 +169,7 @@ local function write_tables(prefix, codes, maps)
       if cl ~= leader then
          if leader ~= nil then
             for i = last_cp + 1, (leader+1)*2^8-1 do
-               output_code(i, 0xFFFE)
+               output_code(i, def)
             end
             io.write "};\n\n"
          end
@@ -178,13 +180,13 @@ local function write_tables(prefix, codes, maps)
          last_cp = leader*2^8-1
       end
       for i = last_cp + 1, cp-1 do
-         output_code(i, 0xFFFE)
+         output_code(i, def)
       end
       output_code(cp, assert(maps[cp]))
       last_cp = cp
    end
    for i = last_cp + 1, (leader+1)*2^8-1 do
-      output_code(i, 0xFFFE)
+      output_code(i, def)
    end
    io.write "};\n\n"
 
@@ -206,13 +208,14 @@ io.write(([[
 
 #include <stddef.h>
 
-#define DBCS_DEFAULT_CODE     %#x
-#define UNI_DEFAULT_CODE      %#x
+#define DBCS_DEFAULT_CODE     %#X
+#define UNI_DEFAULT_CODE      %#X
+#define UNI_INVALID_CODE      %#X
 
-]]):format(info.def_cp, info.def_uni))
+]]):format(info.def_cp, info.def_uni, INVALID))
 
 write_tables("to_uni", cp_codes, from_cp)
-write_tables("from_uni", uni_codes, to_cp)
+write_tables("from_uni", uni_codes, to_cp, info.def_cp)
 
 
 

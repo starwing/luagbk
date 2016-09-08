@@ -17,7 +17,7 @@ static unsigned from_utf8(unsigned uni_code) {
 
 static unsigned to_utf8(unsigned cp_code) {
     const unsigned short *page = to_uni[(cp_code >> 8) & 0xFF];
-    return page == NULL ? UNI_DEFAULT_CODE : page[cp_code & 0xFF];
+    return page == NULL ? UNI_INVALID_CODE : page[cp_code & 0xFF];
 }
 
 static size_t utf8_encode(char *s, unsigned ch) {
@@ -126,7 +126,7 @@ static size_t dbcs_decode(const char *s, const char *e, unsigned *pch) {
     }
 
     ch = s[0] & 0xFF;
-    if (to_uni_00[ch] != UNI_DEFAULT_CODE) {
+    if (to_uni_00[ch] != UNI_INVALID_CODE) {
         *pch = ch;
         return 1;
     }
