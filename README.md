@@ -43,7 +43,7 @@ Pinyin support for UTF-8 Chinese character
 When you have UTF-8 string chinese, you can use another module in this repo:
 pinyin to get the 汉语拼音(Hanyu Pinyin) of Chinese text. this module's data
 are from
-[Unicode Character Database][http://www.unicode.org/Public/UCD/latest/ucd/].
+[Unicode Character Database](http://www.unicode.org/Public/UCD/latest/ucd/).
 a script `parse_unihan_readings.lua`
 will parse text file `Unihan_Readings.txt` from `Unihan.zip` archive in UCD to
 produce `pinyin.h` header file.
